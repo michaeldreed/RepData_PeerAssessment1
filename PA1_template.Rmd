@@ -152,7 +152,7 @@ Conclusions:
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-First we create a new factor variable in the dataset indicating whethere or not it is a weekday or weekend. Then we seperate the data into two seperate datasets, one for the weekdays and one for weekends: 
+First we create a new factor variable in the dataset indicating whethere or not it is a weekday or weekend. Then we seperate the data into two datasets, one for the weekdays and one for weekends: 
 
 ```{r}
 # Create a character vector containing the days of the week

@@ -46,7 +46,7 @@ print(meanTable, type = "html")
 ```
 
 <!-- html table generated in R 3.1.0 by xtable 1.7-3 package -->
-<!-- Sun May 18 12:50:33 2014 -->
+<!-- Sun May 18 13:08:39 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Mean Steps </TH>  </TR>
   <TR> <TD align="right"> 2012-10-01 </TD> <TD align="right">  </TD> </TR>
@@ -128,7 +128,7 @@ print(medianTable, type = "html")
 ```
 
 <!-- html table generated in R 3.1.0 by xtable 1.7-3 package -->
-<!-- Sun May 18 12:50:33 2014 -->
+<!-- Sun May 18 13:08:39 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Median Steps </TH>  </TR>
   <TR> <TD align="right"> 2012-10-01 </TD> <TD align="right">  </TD> </TR>
@@ -290,7 +290,7 @@ print(meanTableNew, type = "html")
 ```
 
 <!-- html table generated in R 3.1.0 by xtable 1.7-3 package -->
-<!-- Sun May 18 12:50:34 2014 -->
+<!-- Sun May 18 13:08:41 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Mean Steps </TH>  </TR>
   <TR> <TD align="right"> 2012-10-01 </TD> <TD align="right"> 37.38 </TD> </TR>
@@ -372,7 +372,7 @@ print(medianTableNew, type = "html")
 ```
 
 <!-- html table generated in R 3.1.0 by xtable 1.7-3 package -->
-<!-- Sun May 18 12:50:34 2014 -->
+<!-- Sun May 18 13:08:41 2014 -->
 <TABLE border=1>
 <TR> <TH>  </TH> <TH> Median Steps </TH>  </TR>
   <TR> <TD align="right"> 2012-10-01 </TD> <TD align="right"> 34.11 </TD> </TR>
@@ -445,7 +445,7 @@ Conclusions:
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-First we create a new factor variable in the dataset indicating whethere or not it is a weekday or weekend. Then we seperate the data into two seperate datasets, one for the weekdays and one for weekends: 
+First we create a new factor variable in the dataset indicating whethere or not it is a weekday or weekend. Then we seperate the data into two datasets, one for the weekdays and one for weekends: 
 
 
 ```r
