@@ -1,20 +1,249 @@
-# Reproducible Research: Peer Assessment 1
+Reproducible Research : Peer Assessment 1  
+========================================================
 
+```{r setoptions, echo=FALSE}
+opts_chunk$set(echo=TRUE)
+```
 
-## Loading and preprocessing the data
+First we need to load and preprocess the data 
 
+```{r}
+# Read in csv file
+data<-read.csv("activity.csv", header=TRUE)
+# Convert date column to Date format
+data$date<-as.Date(data$date)
+```
 
+## What is the mean total number of steps taken per day? 
 
-## What is mean total number of steps taken per day?
+The following histogram shows the total number of steps each day:
 
+```{r, fig.height=5}
+# Use tapply to split the steps for each date and then sum
+totalSteps<-tapply(data$steps, data$date, sum, na.rm=TRUE)
+# Plot a histogram
+hist(totalSteps, breaks=20, main="Histogram of the Total Number of Steps Taken Each Day", xlab="Number of Steps")
+```
 
+The following table shows the **mean** number of steps taken each day:
+
+```{r, results="asis"}
+# Use tapply to split the steps for each date and then calculate the mean
+meanSteps<-tapply(data$steps, data$date, mean, na.rm=TRUE)
+# Display as table
+library(xtable)
+result<-data.frame(meanSteps)
+names(result)<-c("Mean Steps")
+meanTable<-xtable(result)
+print(meanTable, type="html")
+```
+
+The following table shows the **median** number of steps taken each day:
+
+```{r, results="asis"}
+# Use tapply to split the steps for each date and then calculate the median
+medianSteps<-tapply(data$steps, data$date, median, na.rm=TRUE)
+# Display as table
+library(xtable)
+result<-data.frame(medianSteps)
+names(result)<-c("Median Steps")
+medianTable<-xtable(result)
+print(medianTable, type="html")
+```
 
 ## What is the average daily activity pattern?
 
+The following time-series plot shows the 5-minute interval and the average number of steps taken, averaged accross all of the days:
 
+```{r, fig.height=5}
+# Split data into days
+days<-split(data,data$date)
+# Iterate over the intervals
+intervalDayAverage<-c()
+for (i in 1:288){
+    # For each interval create a vector
+    row<-c()
+    # Iterate over the days
+    for (j in 1:61) {
+        # For each day, populate the interval vector with the number of steps
+        # for that day
+        row[j]<-days[[j]][i,1]
+    }
+    # Average over the number of steps for each interval for each day
+    rowMean<-mean(row, na.rm=TRUE)
+    # Add this value to the total vector which contains the average number
+    # of steps taken averaged accross all of the days
+    intervalDayAverage[i]<-rowMean
+}
+# Turn the data into timeseries data
+tsData<-ts(intervalDayAverage, )
+# Plot the data 
+intervals<-data[1:288,3]
+plot(intervals, tsData, type="l", xlab="Interval", ylab="Average Step Count", main="A Time Series Plot Showing the Average \n Number of Steps per Interval accross all Days")
+
+```
+
+The 5-minute interval which, on average across all the days in the dataset, contains the maximum number of steps is interval number **`r which.max(intervalDayAverage)`**.
 
 ## Imputing missing values
 
+The total number of missing values in the dataset is **`r sum(is.na(data$steps))`**.
 
+Now we fill in the missing values.
+
+**In order to fill in the missing values we use the average value for that 5-minute interval number, averaged across all of the days.**
+
+```{r}
+daysNew<-split(data,data$date)
+# Loop over the days in the split dataset
+for (i in 1:61){
+    # Loop over the intervals in each day
+    for (j in 1:288){
+        # For each interval, if the value is NA
+        if (is.na(daysNew[[i]][j,1])){
+            # Then replace the value with the average value for that interval
+            # across all days
+            daysNew[[i]][j,1]<-intervalDayAverage[j]
+        }
+    }
+}
+# Reform the data back into its original form
+dataNew<-unsplit(daysNew, data$date)
+```
+
+The following histogram shows the total number of steps each day for the new data:
+
+```{r, fig.height=5}
+# Use tapply to split the steps for each date and then sum
+totalStepsNew<-tapply(dataNew$steps, dataNew$date, sum, na.rm=TRUE)
+# Plot a histogram
+hist(totalStepsNew, breaks=20, main="Histogram of the Total Number of Steps Taken Each Day", xlab="Number of Steps")
+```
+
+The following table shows the **mean** number of steps taken each day for the new data:
+
+```{r, results="asis"}
+# Use tapply to split the steps for each date and then calculate the mean
+meanStepsNew<-tapply(dataNew$steps, dataNew$date, mean, na.rm=TRUE)
+# Display as table
+library(xtable)
+result<-data.frame(meanStepsNew)
+names(result)<-c("Mean Steps")
+meanTableNew<-xtable(result)
+print(meanTableNew, type="html")
+```
+
+The following table shows the **median** number of steps taken each day for the new data:
+
+```{r, results="asis"}
+# Use tapply to split the steps for each date and then calculate the median
+medianStepsNew<-tapply(dataNew$steps, dataNew$date, median, na.rm=TRUE)
+# Display as table
+library(xtable)
+result<-data.frame(medianStepsNew)
+names(result)<-c("Median Steps")
+medianTableNew<-xtable(result)
+print(medianTableNew, type="html")
+```
+
+Conclusions: 
+
+**_When looking at the histogram, imputing the missing values clearly has an effect on the spread of the data, as there is less of a focus around 0 and the distribution looks more Gaussian. For the days in which NA values were present, the mean and median values are now available, with values for other days staying the same. Though for this example, as it was the case that if NAs were present it was throughout a whole day, and we have replaced NA's with the average accross the days, the mean and median values are the same for each day with NAs present._**
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+First we create a new factor variable in the dataset indicating whethere or not it is a weekday or weekend. Then we seperate the data into two datasets, one for the weekdays and one for weekends: 
+
+```{r}
+# Create a character vector containing the days of the week
+daylist<-c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+# Loop over rows in the new data set
+for (i in 1:nrow(dataNew)){
+    # If the date matches a day in the character vector above
+    if (weekdays(dataNew[i,2]) %in% daylist){
+        # Label it as a weekday 
+        dataNew$dayType[i]<-"weekday"
+    # If not
+    } else {
+        # Label it as a weekend
+        dataNew$dayType[i]<-"weekend"
+    }
+}
+
+# Split the data into subsets
+dataWeekday<-subset(dataNew, dataNew$dayType=="weekday")
+dataWeekend<-subset(dataNew, dataNew$dayType=="weekend")
+```
+
+Create a dataset containing only the data for weekdays:
+
+```{r}
+
+# Calculate the average number of steps per interval across all of the days
+# for weekdays, as above
+
+# Split data into days
+weekdays<-split(dataWeekday,dataWeekday$date)
+# Iterate over the intervals
+intervalWeekdayAverage<-c()
+for (i in 1:288){
+    # For each interval create a vector
+    row<-c()
+    # Iterate over the days
+    for (j in 1:length(weekdays)) {
+        # For each day, populate the interval vector with the number of steps
+        # for that day
+        row[j]<-weekdays[[j]][i,1]
+    }
+    # Average over the number of steps for each interval for each day
+    rowMean<-mean(row, na.rm=TRUE)
+    # Add this value to the total vector which contains the average number
+    # of steps taken averaged accross all of the days
+    intervalWeekdayAverage[i]<-rowMean
+}
+```
+
+Create a dataset containing only the data for weekends:
+
+```{r}
+
+# Calculate the average number of steps per interval across all of the days
+# for weekends, as above
+
+# Split data into days
+weekends<-split(dataWeekend,dataWeekend$date)
+# Iterate over the intervals
+intervalWeekendAverage<-c()
+for (i in 1:288){
+    # For each interval create a vector
+    row<-c()
+    # Iterate over the days
+    for (j in 1:length(weekends)) {
+        # For each day, populate the interval vector with the number of steps
+        # for that day
+        row[j]<-weekends[[j]][i,1]
+    }
+    # Average over the number of steps for each interval for each day
+    rowMean<-mean(row, na.rm=TRUE)
+    # Add this value to the total vector which contains the average number
+    # of steps taken averaged accross all of the days
+    intervalWeekendAverage[i]<-rowMean
+}
+```
+
+The following time-series plot shows the 5-minute interval and the average number of steps taken, averaged accross all of the days for both the **weekdays** and **weekends**:
+
+```{r}
+library(lattice)
+# Combine datasets into one data frame
+intervals<-data[1:288,3]
+resultWeekend<-data.frame(intervals, intervalWeekendAverage)
+resultWeekend$dayType = "weekend"
+resultWeekday<-data.frame(intervals, intervalWeekdayAverage)
+resultWeekday$dayType = "weekday"
+names(resultWeekend)<-c("Interval", "Steps", "dayType")
+names(resultWeekday)<-c("Interval", "Steps", "dayType")
+finalResult<-rbind(resultWeekday,resultWeekend)
+# Create plot
+xyplot(Steps ~ Interval | dayType, data=finalResult, type="l", layout=c(1,2), ylab = "Number Of Steps", main="A Time Series Plot Showing the Average Number \n of Steps per Interval accross all Days Separated by Type of Day")
+```
